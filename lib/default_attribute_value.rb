@@ -11,7 +11,7 @@ module DefaultAttributeValue
         define_method attribute do
           value = read_attribute(attribute)
           
-          if value.present?
+          if value.present? or value == false
             value
           else
             case callback
