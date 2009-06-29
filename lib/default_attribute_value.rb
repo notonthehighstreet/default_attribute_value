@@ -10,10 +10,12 @@ module DefaultAttributeValue
   end
   
   module ClassMethods
-    def default_attribute_value(options)
-      _default_attribute_values.update(options.stringify_keys)
+    def default_attribute_value(default_attributes)
+      store_written_default = default_attributes.delete(:store_written_default)
       
-      options.each do |attribute, callback|
+      _default_attribute_values.update(default_attributes.stringify_keys)
+      
+      default_attributes.each do |attribute, callback|
         class_eval <<-END
           def #{attribute}
             value = read_attribute("#{attribute}")
@@ -24,15 +26,19 @@ module DefaultAttributeValue
               default_attribute_value_result("#{attribute}")
             end
           end
-          
-          def #{attribute}=(value)
-            write_attribute("#{attribute}", value)
-            
-            if self["#{attribute}"] == default_attribute_value_result("#{attribute}")
-              write_attribute("#{attribute}", nil)
-            end
-          end
         END
+        
+        unless store_written_default
+          class_eval <<-END
+            def #{attribute}=(value)
+              write_attribute("#{attribute}", value)
+            
+              if self["#{attribute}"] == default_attribute_value_result("#{attribute}")
+                write_attribute("#{attribute}", nil)
+              end
+            end
+          END
+        end
       end
     end
   end
