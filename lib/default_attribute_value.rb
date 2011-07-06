@@ -1,7 +1,7 @@
 module DefaultAttributeValue
   def self.included(base)
     base.class_eval do
-      class_inheritable_accessor :_default_attribute_values
+      class_attribute :_default_attribute_values
       self._default_attribute_values = {}
       
       extend ClassMethods
@@ -13,7 +13,7 @@ module DefaultAttributeValue
     def default_attribute_value(default_attributes)
       store_written_default = default_attributes.delete(:store_written_default)
       
-      _default_attribute_values.update(default_attributes.stringify_keys)
+      self._default_attribute_values = _default_attribute_values.merge(default_attributes.stringify_keys)
       
       default_attributes.each do |attribute, callback|
         class_eval <<-END
